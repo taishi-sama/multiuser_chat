@@ -2,7 +2,7 @@ public class MessageContainer {
     public UserlistMessage userlistMessage;
     public UserMessagesMessage messagesMessage;
     public WhoImIMessage whoImIMessage;
-    public IMessage into_message() {
+    public IMessage intoMessage() {
         if (userlistMessage != null) {
             return userlistMessage;
         }

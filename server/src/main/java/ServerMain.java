@@ -12,6 +12,7 @@ public class ServerMain {
         var port = 10801;
         var ip = InetAddress.getByAddress(new byte[]{0, 0, 0, 0});
         try (var serverSocket = new ServerSocket(port, 0, ip)) {
+            System.out.println("Listening to " + ip + ":" + port);
             var server_queue = new ConcurrentLinkedQueue<IServerUserMessage>();
             var server_handle = new ServerHandle(server_queue,db);
             var server_thread = new Thread(server_handle);

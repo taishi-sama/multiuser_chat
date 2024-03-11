@@ -2,12 +2,9 @@ import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.gui2.*;
 import com.googlecode.lanterna.gui2.Label;
 import com.googlecode.lanterna.gui2.Panel;
-import com.googlecode.lanterna.input.KeyStroke;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -44,7 +41,7 @@ public class ChatWindow extends BasicWindow {
         }
     }
     public void updateActiveUsers(UserlistMessage userlistMessage) {
-        var users = new StringBuffer();
+        var users = new StringBuilder();
         for (var u: userlistMessage.current_users) {
             users.append(u);
             users.append("\n");
@@ -112,11 +109,10 @@ public class ChatWindow extends BasicWindow {
         setNicknameButton.addListener(new Button.Listener() {
             @Override
             public void onTriggered(Button button) {
-                w.HandleSetNickname();
+                w.HandleLogin();
             }
         });
     }
-    int oldSize = 0;
     public void AddLineToChatbox(String line) {
         messageHistory.add(line);
         var diff = chatBoxLabel.getPreferredSize().getRows() - chatBoxLabel.getSize().getRows();
@@ -126,7 +122,6 @@ public class ChatWindow extends BasicWindow {
         //System.out.println("Before: " + chatBoxLabel.getPreferredSize());
         chatBoxLabel.setText(messageHistory.stream().reduce((x, y) -> {return x + "\n" + y;}).orElse("") + "\n.");
         //System.out.println("After: " + chatBoxLabel.getSize());
-        oldSize = chatBoxLabel.getSize().getRows();
     }
     public void AddMessageToChatbox(String line, String nickname, LocalTime time) {
         AddLineToChatbox(String.format("%s(%s): %s", nickname, time.getHour() + ":" + time.getMinute() + ":" + time.getSecond(), line));
@@ -148,7 +143,7 @@ public class ChatWindow extends BasicWindow {
             AddLineToChatbox("Already connected!");
         }
     }
-    public void HandleSetNickname() {
+    public void HandleLogin() {
         if (this.messageSenderReceiver != null) {
             try {
                 var message = nicknameBox.getText();
@@ -157,7 +152,7 @@ public class ChatWindow extends BasicWindow {
                     return;
                 }
                 AddLineToChatbox("Login message sent...");
-                messageSenderReceiver.SendNicknameChange(message);
+                messageSenderReceiver.SendLogin(message);
             } catch (IOException e) {
                 AddLineToChatbox("Unable to send message! Error: " + e);
             }
@@ -180,14 +175,6 @@ public class ChatWindow extends BasicWindow {
             AddLineToChatbox("Not connected...");
         }
     }
-    @Override
-    public boolean handleInput(KeyStroke key) {
-
-        var r = super.handleInput(key);
-
-        return r;
-    }
-
     @Override
     public void close() {
         super.close();

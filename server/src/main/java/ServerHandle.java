@@ -40,32 +40,32 @@ public class ServerHandle implements Runnable {
                 System.out.println("Users in list: " + user_handles.size());
 
                 break;
-            case UserRegistered userRegistered:
-                if (!userRegistered.userHandle.isRegistered) {
+            case UserRegisteredMessage userRegisteredMessage:
+                if (!userRegisteredMessage.userHandle.isRegistered) {
                     try {
 
-                        userRegistered.userHandle.id = db.getIdOfUser(userRegistered.newName);
-                        if (userRegistered.userHandle.id == null) {
-                            userRegistered.userHandle.id = db.insertNewUser(userRegistered.newName, LocalDateTime.now(), true);
-                            sendMessageToUser(new UserMessagesMessage("Welcome as new user!", "Server"), userRegistered.userHandle);
+                        userRegisteredMessage.userHandle.id = db.getIdOfUser(userRegisteredMessage.newName);
+                        if (userRegisteredMessage.userHandle.id == null) {
+                            userRegisteredMessage.userHandle.id = db.insertNewUser(userRegisteredMessage.newName, LocalDateTime.now(), true);
+                            sendMessageToUser(new UserMessagesMessage("Welcome as new user!", "Server"), userRegisteredMessage.userHandle);
                         }
                         else {
-                            var time = db.getUserLastJoinTime(userRegistered.userHandle.id);
+                            var time = db.getUserLastJoinTime(userRegisteredMessage.userHandle.id);
                             var message = String.format("Welcome back! Last visit was %s", time.getYear() + "." + time.getMonthValue() + "." + time.getDayOfMonth() + " " + time.getHour() + ":" + time.getMinute() + ":" + time.getSecond());
                                     //time.getHour() + ":" + time.getMinute() + ":" + time.getSecond()
                             sendMessageToUser(
                                     new UserMessagesMessage(message, "Server"),
-                                    userRegistered.userHandle);
+                                    userRegisteredMessage.userHandle);
 
-                            db.updateLastJoinAndOnlineStatus(userRegistered.userHandle.id, true, LocalDateTime.now());
+                            db.updateLastJoinAndOnlineStatus(userRegisteredMessage.userHandle.id, true, LocalDateTime.now());
                         }
-                        System.out.printf("User \"%s\" registered as \"%s\".\n", userRegistered.userHandle.username, userRegistered.newName);
-                        userRegistered.userHandle.username = userRegistered.newName;
+                        System.out.printf("User \"%s\" registered as \"%s\".\n", userRegisteredMessage.userHandle.username, userRegisteredMessage.newName);
+                        userRegisteredMessage.userHandle.username = userRegisteredMessage.newName;
                     } catch (SQLException e) {
                         System.out.println("SQL Error: " + e);
                     }
 
-                    userRegistered.userHandle.isRegistered = true;
+                    userRegisteredMessage.userHandle.isRegistered = true;
 
                     sendMessageToEveryone(generateListOfUsers(), null);
                 }

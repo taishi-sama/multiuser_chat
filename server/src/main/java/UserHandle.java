@@ -34,10 +34,10 @@ public class UserHandle implements Runnable {
                 while ((line = br.readLine()) != null && !userSocket.isClosed()) {
                     System.out.println(line);
                     var m = g.fromJson(line, MessageContainer.class);
-                    var msg = m.into_message();
+                    var msg = m.intoMessage();
                     switch (msg) {
                         case WhoImIMessage whoImIMessage:
-                            messages.offer(new UserRegistered(this, whoImIMessage.getUsername()));
+                            messages.offer(new UserRegisteredMessage(this, whoImIMessage.getUsername()));
                             break;
                         case UserMessagesMessage userMessagesMessage:
                             messages.offer(new UserSentMessage(this, userMessagesMessage.content));

@@ -29,7 +29,7 @@ public class MessageSenderReceiver implements Runnable{
         pw.println(s);
         pw.flush();
     }
-    public void SendNicknameChange(String newNickname) throws IOException {
+    public void SendLogin(String newNickname) throws IOException {
         var msg = new WhoImIMessage(newNickname);
         var s = gson.toJson(msg.intoContainer());
         //System.out.println(s);
@@ -45,7 +45,7 @@ public class MessageSenderReceiver implements Runnable{
                 while ((line = br.readLine()) != null && !socket.isClosed()) {
                     System.out.println(line);
                     var m = g.fromJson(line, MessageContainer.class);
-                    var msg = m.into_message();
+                    var msg = m.intoMessage();
                     this.msg.add(msg);
                     //System.out.printf("Message received: %s\n", m);
                 }
