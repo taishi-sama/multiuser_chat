@@ -13,7 +13,15 @@ import java.util.Scanner;
 
 import static java.lang.System.exit;
 
+/**
+ * Стартовая точка программы
+ */
 public class ClientMain {
+    /**
+     * Стартовая точка программы, создаёт экземпляр класса ChatWindow и по очереди обновляет окно интерфейса и внутреннее состояние.
+     * @param args
+     * @throws IOException
+     */
     public static void main(String[] args) throws IOException {
         Terminal term = new DefaultTerminalFactory().createTerminal();
         Screen screen = new TerminalScreen(term);

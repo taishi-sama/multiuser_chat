@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+/**
+ * Представляет собой контекст серверного потока, отвечая за обработку сообщений от клиентских потоков и отправку сообщений клиентам.
+ */
 public class ServerHandle implements Runnable {
     Gson g = new Gson();
     DB db;
@@ -17,7 +20,9 @@ public class ServerHandle implements Runnable {
         this.db = db;
     }
 
-
+    /**
+     * Входная точка серверного потока. В цикле опрашивает очередь сообщений, полученные сообщения обрабатываются методом processMessage(msg)
+     */
     @Override
     public void run() {
         while (true) {
@@ -32,6 +37,15 @@ public class ServerHandle implements Runnable {
             }
         }
     }
+
+    /**
+     * Обрабатывает входящее сообщение и изменяет состояние ServerHandle в зависимости от него.
+     * Если сообщение – NewUserJoinsMessage, то добавляет пользователя в список подключённых пользователей.
+     * Если сообщение – UserRegisteredMessage, то пытается получить id пользователя из базы данных, если успешно, то устанавливает этот id у Userhandle и обновляет статус пользователя в базе данных, если нет, то добавляет нового пользователя в базу данных. Рассылает всем пользователям список пользователей онлайн.
+     * Если сообщение – UserSentMessage, то проверяет, регистрировался ли пользователь. Если да, то рассылает сообщение всем, кроме отправителя, и добавляет это сообщение в лог сообщений.
+     * Если сообщение – UserLeftMessage, то удаляет пользователя из списка подключённых пользователей. Если пользователь зарегистрирован, то устанавливает его статус в базе данных и рассылает оставшимся пользователем обновлённых список пользователей.
+     * @param msg входящее сообщение
+     */
     public void processMessage(IServerUserMessage msg) {
         switch (msg) {
             case NewUserJoinsMessage newUserJoinsMessage:
@@ -104,6 +118,11 @@ public class ServerHandle implements Runnable {
                 //throw new IllegalStateException("Unexpected value: " + msg);
         }
     }
+
+    /**
+     * Организует запрос в базу данных, составляя сообщение-список пользователей
+     * @return список пользователей
+     */
     public UserlistMessage generateListOfUsers() {
         var list = new UserlistMessage();
         var arraylist = new ArrayList<String>();
@@ -116,6 +135,12 @@ public class ServerHandle implements Runnable {
         }
         return list;
     }
+
+    /**
+     * Отправляет сообщение msg конкретному пользователю user.
+     * @param msg
+     * @param user
+     */
     public void sendMessageToUser(IMessage msg, UserHandle user) {
         var container = msg.intoContainer();
         var json = g.toJson(container);
@@ -125,6 +150,12 @@ public class ServerHandle implements Runnable {
         }
     }
     //null for ignore to sent message to everybody
+
+    /**
+     * Отправляет сообщение msg всем клиентам, кроме клиента, переданного параметром ignore.
+     * @param msg сообщение для отправки
+     * @param ignore пользователь, которому сообщение не отправлять. Может быть null.
+     */
     public void sendMessageToEveryone(IMessage msg, UserHandle ignore )
     {
 

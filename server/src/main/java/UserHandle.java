@@ -5,6 +5,9 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+/**
+ * Представляет собой контекст конкретного пользователя, храня в себе сокет соединения с пользователем.
+ */
 public class UserHandle implements Runnable {
     public boolean isRegistered = false;
     public Integer id = null;
@@ -23,6 +26,9 @@ public class UserHandle implements Runnable {
         
     }
 
+    /**
+     * Входная точка клиентского потока. В цикле читает сокет пользователя, прочитанные сообщения отправляет в очередь сообщений. При разрыве сообщения выходит из цикла и отправляет сообщение серверному потоку об отключении клиента.
+     */
     @Override
     public void run() {
         var g = new Gson();

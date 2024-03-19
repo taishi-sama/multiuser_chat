@@ -1,3 +1,6 @@
+/**
+ * Хранит текстовое сообщение от клиента или от сервера, и имя отправителя.
+ */
 public class UserMessagesMessage implements IMessage {
     public UserMessagesMessage(String content, String username) {
         this.content = content;

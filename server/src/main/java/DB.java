@@ -6,13 +6,34 @@ public class DB {
     public final String UserlogTable = "Userlog";
     public final String RegisteredUsersTable = "RegisteredUsers";
     Connection connection;
+
+    /**
+     * Создаёт базу данных H2 в памяти.
+     * @return созданная база данных
+     * @throws SQLException
+     */
     public static DB makeInMemory() throws SQLException {
         var db = new DB("mem:test");
         return db;
     }
+
+    /**
+     * Создаёт подключение к базе данных H2 с заданной строкой подключения.
+     * @param filepath строка подключения
+     * @throws SQLException
+     */
     public DB(String filepath) throws SQLException {
         connection = DriverManager.getConnection ("jdbc:h2:"+filepath);
     }
+
+    /**
+     * Создаёт таблицу сообщений со следующим содержимым:
+     * id
+     * content
+     * userid
+     * time
+     * @throws SQLException
+     */
     public void EnsureUserlogTableCreation() throws SQLException {
         try(var statement = connection.createStatement()) {
             var sql = "CREATE TABLE IF NOT EXISTS " +
@@ -27,6 +48,15 @@ public class DB {
             statement.executeUpdate(sql);
         }
     }
+
+    /**
+     * Создаёт таблицу пользователей со следующим содержимым:
+     * id
+     * username
+     * lastvisit
+     * online
+     * @throws SQLException
+     */
     public void EnsureRegisteredUsersTableCreation() throws SQLException {
         try(var statement = connection.createStatement()) {
             var sql = "CREATE TABLE IF NOT EXISTS " +
@@ -41,6 +71,14 @@ public class DB {
             statement.executeUpdate(sql);
         }
     }
+
+    /**
+     * Добавляет сообщение в таблицу сообщений.
+     * @param content текст сообщения
+     * @param id ID пользователя
+     * @param time время получения
+     * @throws SQLException
+     */
     public void insertNewMessage(String content, int id, LocalDateTime time) throws SQLException {
         try (var statement = connection.prepareStatement("INSERT INTO " + UserlogTable + "(userid, time, content) VALUES (?, ?, ?)")) {
             statement.setInt(1, id);
@@ -49,6 +87,13 @@ public class DB {
             statement.executeUpdate();
         }
     }
+
+    /**
+     * Получает Id пользователя в таблице по имени, возвращает null, если пользователя с таким именем нету.
+     * @param username имя пользователя
+     * @return id пользователя или null
+     * @throws SQLException
+     */
     public Integer getIdOfUser(String username) throws SQLException {
         try (var statement = connection.prepareStatement("SELECT id FROM " + RegisteredUsersTable + " WHERE username = ?")) {
             statement.setString(1, username);
@@ -61,6 +106,13 @@ public class DB {
                 return null;
         }
     }
+
+    /**
+     * Обновляет статус online пользователя
+     * @param userId Id пользователя
+     * @param online новый статус online
+     * @throws SQLException
+     */
     public void updateUserStatus(int userId, boolean online) throws SQLException {
         try (var statement = connection.prepareStatement("UPDATE " + RegisteredUsersTable + " SET online = ? WHERE id = ?")){
             statement.setBoolean(1, online);
@@ -71,6 +123,14 @@ public class DB {
             }
         }
     }
+
+    /**
+     * Обновляет дату последнего захода и статус онлайн пользователя за один запрос.
+     * @param userId Id пользователя
+     * @param online новый статус online
+     * @param localDateTime новое время последнего захода
+     * @throws SQLException
+     */
     public void updateLastJoinAndOnlineStatus(int userId, boolean online, LocalDateTime localDateTime) throws SQLException {
         try (var statement = connection.prepareStatement("UPDATE " + RegisteredUsersTable + " SET (lastvisit, online) = (?, ?) WHERE id = ?")){
             statement.setTimestamp(1, Timestamp.valueOf(localDateTime));
@@ -82,6 +142,15 @@ public class DB {
             }
         }
     }
+
+    /**
+     * Добавляет нового пользователя, возвращая его id.
+     * @param username имя нового пользователя
+     * @param lastvisit дата создания
+     * @param online статус онлайн
+     * @return ID нового пользователя
+     * @throws SQLException
+     */
     public int insertNewUser(String username, LocalDateTime lastvisit, boolean online) throws SQLException {
         try (var statement = connection.prepareStatement("INSERT INTO " + RegisteredUsersTable + " (username, lastvisit, online) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS)){
             statement.setString(1, username);
@@ -103,6 +172,13 @@ public class DB {
             }
         }
     }
+
+    /**
+     * Получает время последнего захода пользователя по его id.
+     * @param id Id пользователя
+     * @return время последнего захода
+     * @throws SQLException
+     */
     public LocalDateTime getUserLastJoinTime(int id) throws SQLException {
         try (var statement = connection.prepareStatement("SELECT lastvisit FROM " + RegisteredUsersTable + " WHERE id = ?")) {
             statement.setInt(1, id);
@@ -115,6 +191,13 @@ public class DB {
                 return null;
         }
     }
+
+    /**
+     * Получает статус пользователя по его id.
+     * @param id Id пользователя
+     * @return статус онлайн
+     * @throws SQLException
+     */
     public Boolean getUserOnlineStatus(int id) throws SQLException {
         try (var statement = connection.prepareStatement("SELECT online FROM " + RegisteredUsersTable + " WHERE id = ?")) {
             statement.setInt(1, id);
@@ -127,6 +210,12 @@ public class DB {
                 return null;
         }
     }
+
+    /**
+     * Получает список имён пользователей онлайн.
+     * @return список пользователей, онлайн сейчас.
+     * @throws SQLException
+     */
     public ArrayList<String> getOnlineUsers() throws SQLException {
         try (var statement = connection.prepareStatement("SELECT username FROM " + RegisteredUsersTable + " WHERE online = true")){
             var al = new ArrayList<String>();

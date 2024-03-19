@@ -4,6 +4,9 @@ import java.net.ServerSocket;
 import java.sql.SQLException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+/**
+ * Входная точка программы, создаёт базу данных и таблицы, начинает прослушку порта 10801 по любому входящему адресу. Создаёт ServerHandle, серверный поток. В цикле ждёт входящих клиентов, создаёт соответствующий подключённому клиенту UserHandle, запускает соответствующий клиентский поток.
+ */
 public class ServerMain {
     public static void main(String[] args) throws IOException, SQLException {
         var db = new DB("./appdb");

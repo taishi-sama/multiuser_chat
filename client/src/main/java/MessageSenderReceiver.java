@@ -14,7 +14,14 @@ public class MessageSenderReceiver implements Runnable{
     public PrintWriter pw;
     public Gson gson;
     public ConcurrentLinkedQueue<IMessage> msg = new ConcurrentLinkedQueue<>();
-    public MessageSenderReceiver(String address, int port, String nickname) throws IOException {
+
+    /**
+     * Создаёт подключение к серверу и соответствующие классы Reader и Writer
+     * @param address сетевой адрес подключения
+     * @param port порт подключения
+     * @throws IOException
+     */
+    public MessageSenderReceiver(String address, int port) throws IOException {
         this.socket = new Socket(address, port);
         socket.setKeepAlive(true);
         var gsonbuilder = new GsonBuilder();
@@ -22,6 +29,12 @@ public class MessageSenderReceiver implements Runnable{
         pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
         br = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
     }
+
+    /**
+     * Отправляет содержимое отправляемого пользователем сообщения на сервер.
+     * @param messageContent Текстовое сообщение пользователя.
+     * @throws IOException
+     */
     public void SendMessage(String messageContent) throws IOException {
         var msg = new UserMessagesMessage(messageContent, null);
         var s = gson.toJson(msg.intoContainer());
@@ -29,6 +42,12 @@ public class MessageSenderReceiver implements Runnable{
         pw.println(s);
         pw.flush();
     }
+
+    /**
+     * Отправляет сообщение о входе/регистрации на сервер.
+     * @param newNickname Имя пользователя, под которым происходит вход.
+     * @throws IOException
+     */
     public void SendLogin(String newNickname) throws IOException {
         var msg = new WhoImIMessage(newNickname);
         var s = gson.toJson(msg.intoContainer());
@@ -36,6 +55,10 @@ public class MessageSenderReceiver implements Runnable{
         pw.println(s);
         pw.flush();
     }
+
+    /**
+     * Получает сообщения с сервера и помещает их в очередь на обработку.
+     */
     @Override
     public void run() {
         var g = new Gson();

@@ -8,6 +8,9 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+/**
+ * Класс-наследник BasicWindow – класса библиотеки Lanterna для терминального GUI, ответственный за отображение присланных сообщений и активных пользователей, отображения полей для подключения к серверу, регистрации, отправки сообщений.
+ */
 public class ChatWindow extends BasicWindow {
     WindowBasedTextGUI gui;
     Label listOfUsers;
@@ -22,6 +25,10 @@ public class ChatWindow extends BasicWindow {
     MessageSenderReceiver messageSenderReceiver;
     Thread messageThread;
     ArrayList<String> messageHistory = new ArrayList<>();
+
+    /**
+     * При наличии подключения считывает из очереди в классе MessageSenderReceiver входящие сообщения и обновляет графический интерфейс в зависимости от пришедшего сообщения, используя для этого методы AddMessageToChatbox(msg, sender, time), updateActiveUsers(list)
+     */
     public void UpdateTick() {
         if (messageSenderReceiver != null) {
             IMessage imessage;
@@ -40,6 +47,11 @@ public class ChatWindow extends BasicWindow {
             }
         }
     }
+
+    /**
+     * Обрабатывает принятый по сети список пользователей и обновляет отображаемый список пользователей.
+     * @param userlistMessage Сообщение с входящими пользователями
+     */
     public void updateActiveUsers(UserlistMessage userlistMessage) {
         var users = new StringBuilder();
         for (var u: userlistMessage.current_users) {
@@ -113,6 +125,11 @@ public class ChatWindow extends BasicWindow {
             }
         });
     }
+
+    /**
+     * Добавляет строку к окну чата, удаляя старые сообщения, что не помещаются в экран.
+     * @param line добавляемая строка
+     */
     public void AddLineToChatbox(String line) {
         messageHistory.add(line);
         var diff = chatBoxLabel.getPreferredSize().getRows() - chatBoxLabel.getSize().getRows();
@@ -123,14 +140,24 @@ public class ChatWindow extends BasicWindow {
         chatBoxLabel.setText(messageHistory.stream().reduce((x, y) -> {return x + "\n" + y;}).orElse("") + "\n.");
         //System.out.println("After: " + chatBoxLabel.getSize());
     }
+
+    /**
+     * Форматирует сообщение перед добавлением в окно чата, добавляет сообщение через функцию AddLineToChatbox(line)
+     * @param line сообщение
+     * @param nickname имя пользователя
+     * @param time время отправки
+     */
     public void AddMessageToChatbox(String line, String nickname, LocalTime time) {
         AddLineToChatbox(String.format("%s(%s): %s", nickname, time.getHour() + ":" + time.getMinute() + ":" + time.getSecond(), line));
     }
 
+    /**
+     * Обрабатывает нажатие кнопки соединения, создавая экземпляр класса MessageSenderReceiver и запуская соответствующий поток.
+     */
     public void HandleConnect() {
         if (this.messageSenderReceiver == null) {
             try {
-                this.messageSenderReceiver = new MessageSenderReceiver(addressBox.getText(), Integer.parseInt(portBox.getText()), nicknameBox.getTextOrDefault("None of text"));
+                this.messageSenderReceiver = new MessageSenderReceiver(addressBox.getText(), Integer.parseInt(portBox.getText()));
                 AddLineToChatbox("Successfully connected!");
                 messageThread = new Thread(this.messageSenderReceiver);
                 messageThread.start();
@@ -143,6 +170,10 @@ public class ChatWindow extends BasicWindow {
             AddLineToChatbox("Already connected!");
         }
     }
+
+    /**
+     * Обрабатывает нажатие кнопки входа, отправляя на сервер сообщение о регистрации.
+     */
     public void HandleLogin() {
         if (this.messageSenderReceiver != null) {
             try {
@@ -161,6 +192,10 @@ public class ChatWindow extends BasicWindow {
             AddLineToChatbox("Not connected...");
         }
     }
+
+    /**
+     * Обрабатывает нажатие кнопки отправки сообщения, отправляя на сервер сообщение с текстом от пользователя.
+     */
     public void HandleMessageSend() {
         if (this.messageSenderReceiver != null) {
             try {

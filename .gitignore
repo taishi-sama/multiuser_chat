@@ -15,6 +15,10 @@ lib/*
 *.iws
 *.iml
 *.ipr
+### IntelliJ IDEA custom ###
+.idea
+
+
 
 ### Eclipse ###
 .apt_generated

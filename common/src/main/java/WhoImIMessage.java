@@ -1,3 +1,6 @@
+/**
+ * Хранит имя клиента, под которым его нужно зарегистрировать.
+ */
 public class WhoImIMessage implements IMessage{
     public String getUsername() {
         return username;
